@@ -97,17 +97,17 @@ def artists():
 
 @app.route('/artists/<int:artist_id>')
 def show_artist(artist_id):
-# shows the artist page with the given venue_id
+
     artist = Artist.query.get(artist_id)
 
-    past_shows = list(filter(lambda x: x.start_time <
+    past_shows = list(filter(lambda d: d.start_time <
                              datetime.today(), artist.shows))  
-    upcoming_shows = list(filter(lambda x: x.start_time >=
+    upcoming_shows = list(filter(lambda d: d.start_time >=
                                  datetime.today(), artist.shows))
 
-    past_shows = list(map(lambda x: x.show_venue(), past_shows))
+    past_shows = list(map(lambda d: d.show_venue(), past_shows))
 # Anonymous function that filters upcoming shows
-    upcoming_shows = list(map(lambda x: x.show_venue(), upcoming_shows))
+    upcoming_shows = list(map(lambda d: d.show_venue(), upcoming_shows))
 
     data = artist.to_dict()
     print(data)
@@ -171,9 +171,8 @@ def search_artists():
                            results=response,
                            search_term=request.form.get('search_term', ''))
 
-# Venues
+#--- Venues
 
-#  Create Venue
 
 @app.route('/venues/create', methods=['GET'])
 def create_venue_form():
@@ -204,10 +203,10 @@ def create_venue_submission():
         db.session.close()
         if error:
             flash('An error occured. Venue ' +
-                  request.form['name'] + ' Could not be listed!')
+                  request.form['name'] + ' Could not be listed')
         else:
             flash('Venue ' + request.form['name'] +
-                  ' was successfully listed!')
+                  ' was successfully listed')
     return render_template('pages/home.html')
 
 
@@ -223,7 +222,7 @@ def venues():
         venue_data = {
             'id': venue.id,
             'name': venue.name,
-            'num_upcoming_shows': len(list(filter(lambda x: x.start_time > datetime.today(),
+            'num_upcoming_shows': len(list(filter(lambda d: d.start_time > datetime.today(),
                                                   venue.shows)))
         }
         if venue.city == prev_city and venue.state == prev_state:
@@ -268,13 +267,8 @@ def search_venues():
 def show_venue(venue_id):
     venue = Venue.query.get(venue_id)
 
-    past_shows = list(filter(lambda x: x.start_time <
-                             datetime.today(), venue.shows))
-    upcoming_shows = list(filter(lambda x: x.start_time >=
-                                 datetime.today(), venue.shows))
-
-    past_shows = list(map(lambda x: x.show_artist(), past_shows))
-    upcoming_shows = list(map(lambda x: x.show_artist(), upcoming_shows))
+    past_shows = list(map(lambda d: d.show_artist(), past_shows))
+    upcoming_shows = list(map(lambda d: d.show_artist(), upcoming_shows))
 
     data = venue.to_dict()
     data['past_shows'] = past_shows
@@ -315,15 +309,15 @@ def edit_venue_submission(venue_id):
     finally:
         db.session.close()
         if error:
-            flash('An error occurred. Venue ' +
+            flash('Something went wrong. Venue ' +
                   request.form['name'] + ' could not be updated.')
         else:
             flash('Venue ' + request.form['name'] +
-                  ' was successfully updated!')
+                  ' has successfully been updated!')
     return redirect(url_for('show_venue', venue_id=venue_id))
 
-#  Shows
 
+#  Shows
 
 @app.route('/shows')
 def shows():
@@ -366,9 +360,9 @@ def create_show_submission():
     finally:
         db.session.close()
         if error:
-            flash('An error occurred. Requested show could not be listed.')
+            flash('Something went wrong. Show could not be listed.')
         else:
-            flash('Requested show was successfully listed')
+            flash('Show has successfully been listed')
         return render_template('pages/home.html')
 
 
