@@ -171,8 +171,7 @@ def search_artists():
                            results=response,
                            search_term=request.form.get('search_term', ''))
 
-#--- Venues
-
+# Venues
 
 @app.route('/venues/create', methods=['GET'])
 def create_venue_form():
