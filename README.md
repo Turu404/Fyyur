@@ -10,7 +10,7 @@ Fyyur is a musical venue and artist booking site that facilitates the discovery 
 
 1    Clone the repo;
         
-         git clone https://github.com/Turu404/cd0046-SQL-and-Data-Modeling-for-the-Web.git
+         git clone https://github.com/Turu404/Fyyur.git
 
 2    Install the dependencies;
         
