@@ -1,11 +1,13 @@
 # ---- Models for Artists , Venues and Shows --- #
 
 # -- Imports
-
+from  flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 
-db = SQLAlchemy()
+app = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:learn101.@localhost:5432/fyyur'
+db = SQLAlchemy(app)
 
 # --- Models --- #
 
@@ -20,16 +22,18 @@ class Venue(db.Model):
     state = db.Column(db.String(120))
     address = db.Column(db.String(120))
     phone = db.Column(db.String(120))
+    genres = db.Column(db.String(120))
     image_link = db.Column(db.String(500))
     facebook_link = db.Column(db.String(120))
     seeking_talent = db.Column(db.Boolean, nullable=False, default=False)
     seeking_description = db.Column(db.String(120))
+    website = db.Column(db.String(120))
 
     artists = db.relationship('Artist', secondary='shows')
     shows = db.relationship('Show', backref=('venues'))
 
 
-# --- dictionary of venues 
+# --- venues dictionary
 
     def to_dict(self):
         return {
@@ -64,13 +68,14 @@ class Artist(db.Model):
     facebook_link = db.Column(db.String(120))
     seeking_venue = db.Column(db.Boolean, nullable=False, default=False)
     seeking_description = db.Column(db.String(120))
+    website = db.Column(db.String(120))
 
     venues = db.relationship('Venue', secondary='shows')
     shows = db.relationship('Show', backref=('artists'))
 
 
 
-# --- dictionary of artists
+# --- artist dictionary
     def to_dict(self):
         return {
             'id': self.id,
@@ -81,6 +86,7 @@ class Artist(db.Model):
             'genres': self.genres,
             'image_link': self.image_link,
             'facebook_link': self.facebook_link,
+            'website': self.website,
             
         }
 
@@ -102,6 +108,7 @@ class Show(db.Model):
 
     venue = db.relationship('Venue')
     artist = db.relationship('Artist')
+
 
 
 # --- dictionary of artists for the show 
@@ -127,3 +134,5 @@ class Show(db.Model):
         }
 
 
+
+db.create_all()
