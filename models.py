@@ -1,4 +1,4 @@
-# ---- Models for Artists , Venue and Shows --- #
+# ---- Models for Artists , Venues and Shows --- #
 
 # -- Imports
 
@@ -28,7 +28,7 @@ class Venue(db.Model):
     shows = db.relationship('Show', backref=('venues'))
 
 
-# --- Return a dictinary of venues 
+# --- dictionary of venues 
 
     def to_dict(self):
         return {
@@ -38,7 +38,7 @@ class Venue(db.Model):
             'state': self.state,
             'address': self.address,
             'phone': self.phone,
-            'genres': self.genres.split(','),  # convert string to list
+            'genres': self.genres,
             'image_link': self.image_link,
             'facebook_link': self.facebook_link,
             'website': self.website,
@@ -69,7 +69,7 @@ class Artist(db.Model):
 
 
 
-# --- Return a dictinary of artist
+# --- dictionary of artists
     def to_dict(self):
         return {
             'id': self.id,
@@ -77,7 +77,7 @@ class Artist(db.Model):
             'city': self.city,
             'state': self.state,
             'phone': self.phone,
-            'genres': self.genres.split(','),  # convert string to list
+            'genres': self.genres,
             'image_link': self.image_link,
             'facebook_link': self.facebook_link,
             
@@ -87,7 +87,7 @@ class Artist(db.Model):
         return f'<Artist {self.id} {self.name}>'
 
 
-# --- show model --
+# --- Show model --
 
 class Show(db.Model):
     __tablename__ = 'shows'
@@ -103,19 +103,19 @@ class Show(db.Model):
     artist = db.relationship('Artist')
 
 
-# --- Return a dictinary of artists for the show 
+# --- dictionary of artists for the show 
 
     def show_artist(self):
         return {
             'artist_id': self.artist_id,
             'artist_name': self.artist.name,
             'artist_image_link': self.artist.image_link,
-# --- converts datetime to string ----
+# --- converting datetime to string ----
             'start_time': self.start_time.strftime('%Y-%m-%d %H:%M:%S')
         }
 
 
-# --- Return a dictinary of venues for the show 
+# --- dictionary of venues for the show 
 
     def show_venue(self):
         return {
