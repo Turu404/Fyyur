@@ -88,7 +88,6 @@ def create_artist_submission():
 
 # Get Artist
 
-
 @app.route('/artists')
 def artists():
     return render_template('pages/artists.html',
@@ -266,8 +265,13 @@ def search_venues():
 def show_venue(venue_id):
     venue = Venue.query.get(venue_id)
 
-    past_shows = list(map(lambda d: d.show_artist(), past_shows))
-    upcoming_shows = list(map(lambda d: d.show_artist(), upcoming_shows))
+#    past_shows = list(map(lambda d: d.show_artist(), past_shows))
+#    upcoming_shows = list(map(lambda d: d.show_artist(), upcoming_shows))
+
+    past_shows = list(filter(lambda x: x.start_time <
+                             datetime.today(), venue.shows))
+    upcoming_shows = list(filter(lambda x: x.start_time >=
+                                 datetime.today(), venue.shows))
 
     data = venue.to_dict()
     data['past_shows'] = past_shows
