@@ -14,8 +14,14 @@ db = SQLAlchemy(app)
 # --- venue model ---
 
 class Venue(db.Model):
+    '''
+    naming the table
+    '''
     __tablename__ = 'venues'
 
+    '''
+    attributes columns to the venues table
+    '''
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String)
     city = db.Column(db.String(120))
@@ -28,12 +34,17 @@ class Venue(db.Model):
     seeking_talent = db.Column(db.Boolean, nullable=False, default=False)
     seeking_description = db.Column(db.String(120))
     website = db.Column(db.String(120))
-
+    
+    '''
+    relationship between the different tables
+    '''
     artists = db.relationship('Artist', secondary='shows')
     shows = db.relationship('Show', backref=('venues'))
 
 
-# --- venues dictionary
+    '''
+    creating a dictionary list that will store the venues table attributes
+    '''
 
     def to_dict(self):
         return {
@@ -50,6 +61,9 @@ class Venue(db.Model):
             
         }
 
+    '''
+    information to show at the view
+    ''' 
     def __repr__(self):
         return f'<Venue {self.id} {self.name}>'
 
@@ -58,6 +72,10 @@ class Venue(db.Model):
 class Artist(db.Model):
     __tablename__ = 'artists'  
 
+    '''
+    attributes columns of the artists table
+    '''
+   
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String)
     city = db.Column(db.String(120))
@@ -69,13 +87,18 @@ class Artist(db.Model):
     seeking_venue = db.Column(db.Boolean, nullable=False, default=False)
     seeking_description = db.Column(db.String(120))
     website = db.Column(db.String(120))
-
+    
+    '''
+    relationship between the artists table and other tables
+    '''
     venues = db.relationship('Venue', secondary='shows')
     shows = db.relationship('Show', backref=('artists'))
 
 
+    '''
+    creating a dictionary list that will store the artists table attributes
+    ''' 
 
-# --- artist dictionary
     def to_dict(self):
         return {
             'id': self.id,
@@ -89,7 +112,10 @@ class Artist(db.Model):
             'website': self.website,
             
         }
-
+    
+    '''
+    information to show at the view
+    ''' 
     def __repr__(self):
         return f'<Artist {self.id} {self.name}>'
 
@@ -98,6 +124,10 @@ class Artist(db.Model):
 
 class Show(db.Model):
     __tablename__ = 'shows'
+
+    '''
+    attributes columns of the shows table linked with foreign keys to the other tables
+    '''
 
     id = db.Column(db.Integer, primary_key=True)
     artist_id = db.Column(db.Integer, db.ForeignKey(
@@ -110,20 +140,21 @@ class Show(db.Model):
     artist = db.relationship('Artist')
 
 
-
-# --- dictionary of artists for the show 
-
+    '''
+    creating a function that returns the table attributes
+    '''
     def show_artist(self):
         return {
             'artist_id': self.artist_id,
             'artist_name': self.artist.name,
             'artist_image_link': self.artist.image_link,
+
 # --- converting datetime to string ----
             'start_time': self.start_time.strftime('%Y-%m-%d %H:%M:%S')
         }
 
 
-# --- dictionary of venues for the show 
+
 
     def show_venue(self):
         return {
