@@ -29,13 +29,11 @@ migrate = Migrate(app,db)
     
 
 def format_datetime(value, format='medium'):
-  date = dateutil.parser.parse(value)
-  if format == 'full':
-      format="EEEE MMMM, d, y 'at' h:mma"
-  elif format == 'medium':
-      format="EE MM, dd, y h:mma"
-  return babel.dates.format_datetime(date, format, locale='en')
-
+  if isinstance(value, str):
+        date = dateutil.parser.parse(value)
+  else:
+        date = value
+  return babel.dates.format_datetime(date, format)     
 app.jinja_env.filters['datetime'] = format_datetime
 
 
@@ -51,13 +49,17 @@ def index():
 @app.route('/artists/create', methods=['GET'])
 def create_artist_form():
     form = ArtistForm()
-    return render_template('forms/new_artist.html', form=form)
+    body = {}
+    return render_template('forms/new_artist.html', form=form, body=body)
 
-
+'''
+posting the artists information when created
+'''
 @app.route('/artists/create', methods=['POST'])
 def create_artist_submission():
     form = ArtistForm()
     error = False
+    body = {}
     try:
         artist = Artist()
         artist.name = request.form['name']
@@ -78,6 +80,9 @@ def create_artist_submission():
         print(sys.exc_info())
     finally:
         db.session.close()
+        '''
+        flash message incase of error when listing the artist or when artist has successfully been enlisted
+        '''
         if error:
             flash('An error occurred. Artist ' +
                   request.form['name'] + ' could not be listed.')
@@ -86,8 +91,10 @@ def create_artist_submission():
                   ' was successfully listed!')
         return render_template('pages/home.html')
 
-# Get Artist
 
+'''
+listing all artists recorded
+'''
 @app.route('/artists')
 def artists():
     return render_template('pages/artists.html',
@@ -97,16 +104,26 @@ def artists():
 @app.route('/artists/<int:artist_id>')
 def show_artist(artist_id):
 
+    '''
+    geting the artists data through the artists id
+    '''
     artist = Artist.query.get(artist_id)
 
+    '''
+    artists past shows, upcoming shows , there venues and the time the took place
+    '''
     past_shows = list(filter(lambda d: d.start_time <
                              datetime.today(), artist.shows))  
     upcoming_shows = list(filter(lambda d: d.start_time >=
                                  datetime.today(), artist.shows))
 
     past_shows = list(map(lambda d: d.show_venue(), past_shows))
-# Anonymous function that filters upcoming shows
+
     upcoming_shows = list(map(lambda d: d.show_venue(), upcoming_shows))
+    
+    '''
+    shows the data of the artists past and upcoming stored
+    '''
 
     data = artist.to_dict()
     print(data)
@@ -116,9 +133,11 @@ def show_artist(artist_id):
     data['upcoming_shows_count'] = len(upcoming_shows)
     return render_template('pages/show_artist.html', artist=data)
 
-# Update Artist
 
 
+'''
+geting artists information allowing the user to edit it 
+'''
 @app.route('/artists/<int:artist_id>/edit', methods=['GET'])
 def edit_artist(artist_id):
     form = ArtistForm()
@@ -126,7 +145,9 @@ def edit_artist(artist_id):
 
     return render_template('forms/edit_artist.html', form=form, artist=artist)
 
-
+'''
+posting the edited information of the artists
+'''
 @app.route('/artists/<int:artist_id>/edit', methods=['POST'])
 def edit_artist_submission(artist_id):
     error = False
@@ -155,13 +176,21 @@ def edit_artist_submission(artist_id):
         else:
             return redirect(url_for('show_artist', artist_id=artist_id))
 
-
+'''
+allowing the user to search for artists and posting the search results
+'''
 @app.route('/artists/search', methods=['POST'])
 def search_artists():
     search_term = request.form.get('search_term')
+    '''
+    filtering the search results according to the users requirements
+    '''
     search_results = Artist.query.filter(
         Artist.name.ilike('%{}%'.format(search_term))).all()  
-
+    
+    '''
+    responses to return to the user upon the search filters
+    '''
     response = {}
     response['count'] = len(search_results)
     response['data'] = search_results
@@ -181,6 +210,7 @@ def create_venue_form():
 @app.route('/venues/create', methods=['POST'])
 def create_venue_submission():
     error = False
+    body = {}
     try:
         venue = Venue()
         venue.name = request.form['name']
@@ -200,6 +230,10 @@ def create_venue_submission():
     finally:
         db.session.close()
         if error:
+            '''
+            flash message incase of successfull listing or incase of an error when listing
+            '''
+            
             flash('An error occured. Venue ' +
                   request.form['name'] + ' Could not be listed')
         else:
@@ -237,13 +271,18 @@ def venues():
     data.append(tmp)
     return render_template('pages/venues.html', areas=data)
 
-
+'''
+user searches for different venues and the information is posted on the view
+'''
 @app.route('/venues/search', methods=['POST'])
 def search_venues():
     search_term = request.form.get('search_term')
     venues = Venue.query.filter(
         Venue.name.ilike('%{}%'.format(search_term))).all()
 
+    '''
+    upon searching the responses should include the data below
+    '''
     data = []
     for venue in venues:
         tmp = {}
@@ -263,16 +302,18 @@ def search_venues():
 
 @app.route('/venues/<int:venue_id>')
 def show_venue(venue_id):
+    '''
+    venues with the specific id filled are retrieved with there past shows and upcoming shows and what time they occur
+    '''
     venue = Venue.query.get(venue_id)
-
-#    past_shows = list(map(lambda d: d.show_artist(), past_shows))
-#    upcoming_shows = list(map(lambda d: d.show_artist(), upcoming_shows))
-
-    past_shows = list(filter(lambda x: x.start_time <
+    past_shows = list(filter(lambda d: d.start_time <
                              datetime.today(), venue.shows))
-    upcoming_shows = list(filter(lambda x: x.start_time >=
+    upcoming_shows = list(filter(lambda d: d.start_time >=
                                  datetime.today(), venue.shows))
 
+    '''
+    shows the previous and upcoming data of the shows stored
+    '''
     data = venue.to_dict()
     data['past_shows'] = past_shows
     data['upcoming_shows'] = upcoming_shows
@@ -281,16 +322,23 @@ def show_venue(venue_id):
 
     return render_template('pages/show_venue.html', venue=data)
 
-
+'''
+retriving the previous data and editing it
+'''
 @app.route('/venues/<int:venue_id>/edit', methods=['GET'])
 def edit_venue(venue_id):
     form = VenueForm()
     venue = Venue.query.get(venue_id).to_dict()
     return render_template('forms/edit_venue.html', form=form, venue=venue)
 
-
+'''
+the venues being edited if any changes are required. 
+'''
 @app.route('/venues/<int:venue_id>/edit', methods=['POST'])
 def edit_venue_submission(venue_id):
+    '''
+    the data is updated according to the information submitted by the user
+    '''
     venue = Venue.query.get(venue_id)
 
     error = False
@@ -311,6 +359,9 @@ def edit_venue_submission(venue_id):
         print(sys.exc_info())
     finally:
         db.session.close()
+        '''
+        flash messages incase of error or success
+        '''
         if error:
             flash('Something went wrong. Venue ' +
                   request.form['name'] + ' could not be updated.')
@@ -324,9 +375,15 @@ def edit_venue_submission(venue_id):
 
 @app.route('/shows')
 def shows():
+    '''
+    list all shows created
+    '''
     shows = Show.query.all()
 
     data = []
+    '''
+    the data included is that, that has been entered in the postgres data 
+    '''
     for show in shows:
         data.append({
             'venue_id': show.venue.id,
@@ -342,13 +399,21 @@ def shows():
 
 @app.route('/shows/create')
 def create_shows():
+    '''
+    rendering forms to create the show
+    '''
     form = ShowForm()
     return render_template('forms/new_show.html', form=form)
 
+ 
+'''
+show the created show created by the user
+'''  
 
 @app.route('/shows/create', methods=['POST'])
 def create_show_submission():
     error = False
+    body = {}
     try:
         show = Show()
         show.artist_id = request.form['artist_id']
